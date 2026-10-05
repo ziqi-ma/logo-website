@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="LoGo: Local-Global Rewards for Consistent Long-Horizon Video Generation">
+  <meta name="keywords" content="LoGo, video generation, reinforcement learning">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoGo</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.png">
+
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+
+  <style>
+    .footer{
+      background-color: #ffffff;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .video-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .video-grid video {
+      width: 100%;
+      display: block;
+    }
+    .video-label {
+      font-size: 18px;
+      font-weight: bold;
+      color: black;
+      margin-bottom: 4px;
+    }
+    .video-grid-4 {
+      grid-template-columns: 1fr 1fr;
+    }
+    .input-layout {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .input-panel {
+      width: calc(50% - 6px);
+      margin: 0 auto 12px;
+    }
+    .section h2.title.is-3 {
+      font-size: 26px;
+    }
+    .publication-links .button {
+      font-size: 0.875rem;
+    }
+    .publication-authors.is-size-5 {
+      font-size: 19px !important;
+    }
+    .controls-note {
+      font-size: 20px;
+      color: #555;
+      text-align: center;
+      margin-top: 8px;
+    }
+    .input-image {
+      width: 100%;
+      display: block;
+    }
+    .container.is-max-desktop {
+      max-width: 840px !important;
+    }
+    @media (min-width: 769px) {
+      /* keep the title on its two lines by scaling the font down on narrower windows */
+      .publication-title {
+        font-size: min(calc(840px / 23.3), calc((100vw - 64px) / 23.3)) !important;
+      }
+      .title-line {
+        white-space: nowrap;
+      }
+      .publication-title {
+        min-width: 0;
+      }
+    }
+    .dropdown-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .dropdown-label {
+      font-size: 16px;
+      font-weight: bold;
+      color: black;
+      white-space: nowrap;
+    }
+    .select.is-link select {
+      border-width: 2px;
+    }
+    .dropdown-row {
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      flex-wrap: nowrap !important;
+    }
+    .dropdown-row .dropdown-control:first-child {
+      flex: 1;
+      min-width: 0;
+    }
+    .dropdown-row .dropdown-control:first-child .select,
+    .dropdown-row .dropdown-control:first-child select {
+      width: 100%;
+    }
+    .dropdown-control .select select {
+      text-overflow: ellipsis;
+    }
+    @media (max-width: 768px) {
+      .dropdown-row {
+        flex-wrap: wrap !important;
+      }
+      .dropdown-row .dropdown-control:first-child {
+        flex-basis: 100%;
+      }
+    }
+    @media (max-width: 768px) {
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+      .video-grid-4 {
+        grid-template-columns: 1fr 1fr;
+      }
+      .publication-title {
+        font-size: 2rem !important;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title"><span class="title-line">LoGo: Local-Global Rewards for Consistent</span> <br class="is-hidden-mobile"><span class="title-line">Long&#8209;Horizon Video Generation</span></h1>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                Ziqi Ma<sup>1,2*</sup>,</span>
+              <span class="author-block">Shreya Sharma<sup>2</sup>,</span>
+              <span class="author-block">Mohamed El Banani<sup>2</sup>,</span>
+              <span class="author-block">Katja Schwarz<sup>2</sup>,</span>
+              <span class="author-block">Chongjie Ye<sup>2</sup>,</span>
+              <span class="author-block">Chao-Yuan Wu<sup>2</sup>,</span>
+              <span class="author-block">Li Fei-Fei<sup>2</sup>,</span>
+              <span class="author-block">Ben Mildenhall<sup>2</sup>,</span>
+              <span class="author-block">Georgia Gkioxari<sup>1</sup>,</span>
+              <span class="author-block">Justin Johnson<sup>2</sup>,</span>
+              <span class="author-block">Gowthami Somepalli<sup>2</sup></span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><sup>1</sup>California Institute of Technology,</span>
+              <span class="author-block"><sup>2</sup>World Labs</span>
+            </div>
+            <div class="publication-authors" style="font-size: 14px; color: #555;">
+              <span class="author-block"><sup>*</sup>Work done during internship at World Labs</span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- arXiv / PDF Links. -->
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/2610.03636" target="_blank" rel="noopener noreferrer" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://arxiv.org/pdf/2610.03636" target="_blank" rel="noopener noreferrer" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                    </span>
+                    <span>pdf</span>
+                  </a>
+                </span>
+                <!-- Code Link. -->
+                <span class="link-block">
+                  <a href="https://github.com/ziqi-ma/logo" target="_blank" rel="noopener noreferrer" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+                <!-- Benchmark Link. -->
+                <span class="link-block">
+                  <a href="https://huggingface.co/datasets/ziqima/TrajectoryBench" target="_blank" rel="noopener noreferrer" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-database"></i>
+                    </span>
+                    <span>Benchmark</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="hero teaser">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <p style="font-size: 20px; color: black;">
+          We present LoGo: a post-training method to improve 3D-consistency for long-horizon camera-controlled video generation.
+        </p>
+        <div style="height: 30px;"></div>
+        <video id="teaser" autoplay muted loop playsinline controls disablepictureinpicture width="100%">
+          <source src="static/videos/teaser.mp4?v=7" type="video/mp4">
+        </video>
+          <p class="controls-note">WASD denotes camera translation, and arrows denote rotation.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" id="abstract">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p style="font-size: 17px; color: black;">
+              Camera-controlled video models are rapidly advancing toward long generation horizons and complex camera control. A key failure mode is 3D inconsistency: as the camera moves, objects lose permanence and scene structures shift. Existing post-training techniques, which assign a single scalar reward to the entire generation, are poorly suited to correcting these inconsistencies over long horizons. We introduce LoGo, which blends global and spatially localized rewards for camera-controlled video models. The local reward gives fine-grained credit assignment, which substantially improves 3D consistency, while the global reward preserves camera following and video quality. Across three base models, LoGo shows a clear advantage on DL3DV and TrajectoryBench, a new benchmark for long-horizon, complex camera trajectories that current evaluations lack. LoGo effectively reduces local object shifts and artifacts, as well as global scene changes, illustrating the importance of credit assignment in post-training video models.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" id="baselines">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">LoGo vs. Prior Methods</h2>
+          <div class="content has-text-justified">
+            <p style="font-size: 17px; color: black;">
+              As video generation models advance toward longer horizon, various 3D inconsistency failure modes emerge, such as 1) scene layout changes upon revisit, 2) artifacts or corruption, 3) objects appearing or disappearing, and 4) objects changing geometry or appearance. While prior methods cannot effectively fix them, LoGo resolves these inconsistencies.
+            </p>
+          </div>
+          <div class="field is-grouped is-grouped-centered is-grouped-multiline mb-4 dropdown-row">
+            <div class="control dropdown-control"><label class="dropdown-label" for="baselines-mode">Failure mode</label><div class="select is-rounded is-medium is-link">
+              <select id="baselines-mode" aria-label="Failure mode" autocomplete="off">
+                <option value="all">All failure modes</option>
+                <option value="1">Scene layout changes upon revisit</option>
+                <option value="2">Artifacts or corruption</option>
+                <option value="3">Objects appearing or disappearing</option>
+                <option value="4">Objects changing geometry or appearance</option>
+              </select>
+            </div></div>
+            <div class="control dropdown-control"><label class="dropdown-label" for="baselines-select">Scene</label><div class="select is-rounded is-medium is-link">
+              <select id="baselines-select" aria-label="Scene" autocomplete="off">
+                <option value="scene1" data-mode="2">Scene 1</option>
+                <option value="scene2" data-mode="3">Scene 2</option>
+                <option value="scene3" data-mode="1">Scene 3</option>
+                <option value="scene4" data-mode="2" data-slowdown="1.2">Scene 4</option>
+                <option value="scene5" data-mode="4">Scene 5</option>
+              </select>
+            </div></div>
+          </div>
+          <div class="input-layout">
+            <div class="input-panel"><p class="video-label">Input image</p><img class="input-image" data-dir="baselines" alt="Input image"></div>
+            <div class="video-grid video-grid-4" id="baselines-grid">
+              <div><p class="video-label">Base</p><video muted playsinline controls disablepictureinpicture data-method="base"></video></div>
+              <div><p class="video-label">VideoGPA</p><video muted playsinline controls disablepictureinpicture data-method="VideoGPA"></video></div>
+              <div><p class="video-label">World-R1</p><video muted playsinline controls disablepictureinpicture data-method="World-R1"></video></div>
+              <div><p class="video-label">LoGo</p><video muted playsinline controls disablepictureinpicture data-method="LoGo"></video></div>
+            </div>
+          </div>
+          <p class="controls-note">WASD denotes camera translation, and arrows denote rotation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" id="method">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Method</h2>
+          <div class="content has-text-justified">
+            <p style="font-size: 17px; color: black;">
+              The most naive method to post-train for 3D consistency is to use a global reward. However, this is not effective enough (see <a href="#ablation">ablation</a> below). Modern video models fail in largely local ways, including inconsistent object appearance, hallucinated or disappearing objects, and local artifacts. A good reward should penalize these failures directly rather than merely ranking full-length videos. Motivated by this, we design a reward localization method for accurate credit assignment during post-training. LoGo introduces three components: 1) reward localization, 2) Local-Global blending, 3) reward interleaving.
+            </p>
+          </div>
+
+          <div class="content has-text-justified mt-5">
+            <p style="font-size: 17px; color: black;">
+              <b>Reward Localization.</b> LoGo is based on 3D scene reprojection. Given a video, we first construct a scene point cloud by passing keyframes to VGGT-&Omega; and unproject each pixel using the predicted depth into a shared coordinate system. As shown in the figure below, we voxelize this shared 3D space into a voxel grid, and calculate a spatially localized error per voxel: each voxel's error is defined as the average reprojection error of every pixel unprojected into the voxel.
+            </p>
+          </div>
+          <img src="static/images/voxel_frames_white.png" alt="Voxel-level reward localization: pixels from several frames unproject into a shared voxel grid" style="max-width: 420px; width: 100%; margin-top: -48px; mix-blend-mode: multiply;">
+          <div class="content has-text-justified mt-5">
+            <p style="font-size: 17px; color: black;">
+              Below is a visualization of the localized reward projected to keyframes. It catches local inconsistencies such as the changing plant appearance upon revisit in f2 (top row), the hallucinated shelf (second row), and the yellow artifact floating on the desk (last row).
+            </p>
+          </div>
+          <img src="static/images/reward_localize.jpg?v=2" alt="Localized reward projected to keyframes (red = bad, blue = good)" style="max-width: 600px; width: 100%;">
+
+          <div class="content has-text-justified mt-5">
+            <p style="font-size: 17px; color: black;">
+              <b>Local-Global Blending.</b> While the local reward is highly effective at improving 3D consistency, using it in isolation causes video quality to degrade over the course of training. We attribute this to reward hacking: the local reward fixes inconsistencies at the expense of overall quality, reducing sharpness and vibrancy, since blurrier, smoother edges lower depth errors and less vibrant (closer-to-grey) colors lower RGB errors. LoGo, via blending local with global rewards, improves geometry without degrading video quality, as shown in the reward and eval curves below.
+            </p>
+          </div>
+          <img src="static/images/curves_overlay.png" alt="Geometry reward and validation video quality over training for Local-only and LoGo" style="max-width: 560px; width: 100%;">
+          <div class="content has-text-justified mt-5">
+            <p style="font-size: 17px; color: black;">
+              LoGo extends the Pareto frontier in the consistency-video quality tradeoff.
+            </p>
+          </div>
+          <img src="static/images/depth_vs_hpsv3.png" alt="Pareto frontier of 3D consistency vs. video quality for Global-only, Local-only and LoGo" style="max-width: 384px; width: 100%;">
+
+          <div class="content has-text-justified mt-5">
+            <p style="font-size: 17px; color: black;">
+              <b>Reward Interleaving.</b> To ensure our post-trained models remain competitive on metrics complementary to geometric consistency, such as video quality and camera control, we interleave post-training with rewards targeting these properties. We adopt a cyclic schedule of consistency, aesthetic, and camera following rewards. In the pareto curve above, the dotted lines represent interleaved rewards, which comprises the "higher video quality" (up left) part of the curves.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" id="ablation">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Ablation: Global vs. LoGo</h2>
+          <div class="content has-text-justified">
+            <p style="font-size: 17px; color: black;">
+              We compare global-only reward with LoGo. Global-only reward is insufficient in fixing many localized inconsistency failures, such as artifacts or corruption, objects appearing or disappearing, or objects changing geometry or appearance.
+            </p>
+          </div>
+          <div class="field is-grouped is-grouped-centered is-grouped-multiline mb-4 dropdown-row">
+            <div class="control dropdown-control"><label class="dropdown-label" for="ablation-mode">Failure mode</label><div class="select is-rounded is-medium is-link">
+              <select id="ablation-mode" aria-label="Failure mode" autocomplete="off">
+                <option value="all">All failure modes</option>
+                <option value="2">Artifacts or corruption</option>
+                <option value="3">Objects appearing or disappearing</option>
+                <option value="4">Objects changing geometry or appearance</option>
+              </select>
+            </div></div>
+            <div class="control dropdown-control"><label class="dropdown-label" for="ablation-select">Scene</label><div class="select is-rounded is-medium is-link">
+              <select id="ablation-select" aria-label="Scene" autocomplete="off">
+                <option value="scene3" data-mode="2">Scene 1</option>
+                <option value="scene1" data-mode="3">Scene 2</option>
+                <option value="scene2" data-mode="3">Scene 3</option>
+                <option value="scene4" data-mode="4">Scene 4</option>
+              </select>
+            </div></div>
+          </div>
+          <div class="input-layout">
+            <div class="input-panel"><p class="video-label">Input image</p><img class="input-image" data-dir="ablation" alt="Input image"></div>
+          </div>
+          <div class="video-grid" id="ablation-grid" style="max-width: 700px; margin: 0 auto;">
+            <div><p class="video-label">Global</p><video muted playsinline controls disablepictureinpicture data-method="global"></video></div>
+            <div><p class="video-label">LoGo</p><video muted playsinline controls disablepictureinpicture data-method="LoGo"></video></div>
+          </div>
+          <p class="controls-note">WASD denotes camera translation, and arrows denote rotation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" id="trajectorybench">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">TrajectoryBench</h2>
+          <div class="content has-text-justified">
+            <p style="font-size: 17px; color: black;">
+              Current benchmarks lack evaluation of long-horizon, camera-controlled generation. We introduce TrajectoryBench, a new benchmark for long-horizon video generation with complex camera trajectories. Compared to existing benchmarks, it contains challenging scenarios along three axes: <span style="white-space: nowrap;">1)&nbsp;<b>expansion</b>:</span> trajectories that move far from the initial view, testing whether a model can generate unseen content; <span style="white-space: nowrap;">2)&nbsp;<b>revisit</b>:</span> trajectories that revisit the same area from multiple viewing angles, testing 3D consistency; and <span style="white-space: nowrap;">3)&nbsp;<b>transition</b>:</span> trajectories with space transitions, such as passing through a door, testing whether a model can synthesize entirely new scenes. The visualization below compares a camera trajectory from <a href="https://haoyi-duan.github.io/WorldScore/" target="_blank" rel="noopener noreferrer">WorldScore</a> with two TrajectoryBench trajectories, one focusing on expansion and one focusing on revisit.
+            </p>
+          </div>
+          <img src="static/images/trajbench.png?v=3" alt="WorldScore vs. TrajectoryBench camera trajectories (expansion and revisit)" style="max-width: 640px; width: 100%;">
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" id="results">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Quantitative Results</h2>
+          <div class="content has-text-justified">
+            <p style="font-size: 17px; color: black;">
+              We evaluate LoGo on 3 different base models on 2 benchmarks, with three post-training methods. TrajectoryBench trajectories are split into &ldquo;easy&rdquo;, &ldquo;medium&rdquo; and &ldquo;hard&rdquo; to comprehensively capture a model's performance. The figure below shows the depth reprojection PSNR (higher better) of various methods on easy, medium, and hard splits of TrajectoryBench across three base models.
+            </p>
+          </div>
+          <img src="static/images/depth_psnr.png?v=2" alt="PSNR by difficulty" width="100%">
+
+          <div class="content has-text-justified mt-5">
+            <p style="font-size: 17px; color: black;">
+              Below is the DL3DV evaluation result for three models. We show PSNR from depth reprojection, PSNR from Gaussian reconstruction, and epipolar error. Full metric tables can be found in the paper.
+            </p>
+          </div>
+          <img src="static/images/dl3dv_bars.png?v=3" alt="DL3DV PSNR-depth, PSNR-Gaussian and epipolar error for Base, VideoGPA, World-R1 and LoGo on three base models" width="100%">
+
+          <h3 class="title is-4 mt-6">Longer Videos</h3>
+          <div class="content has-text-justified">
+            <p style="font-size: 17px; color: black;">
+              We evaluate LoGo for video generation with increasing lengths, up to 400 frames. While epipolar error generally increases as generation becomes longer, LoGo's advantage strengthens for longer videos, showing the increasing importance of credit assignment for challenging, long-horizon generation.
+            </p>
+          </div>
+          <img src="static/images/epipolar_length.png?v=4" alt="Epipolar error vs. video length" style="max-width: 480px; width: 100%;">
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" id="next">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">What's Next?</h2>
+          <div class="content has-text-justified">
+            <p style="font-size: 17px; color: black;">
+              LoGo shows the importance of credit assignment in effective post-training for long-horizon video generation. However, very long horizon generation remains challenging and might require better memory design or planning. Please reach out if you are interested in this topic too!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>@misc{ma2026logo,
+  title={LoGo: Local-Global Rewards for Consistent Long-Horizon Video Generation},
+  author={Ziqi Ma and Shreya Sharma and Mohamed El Banani and Katja Schwarz and Chongjie Ye and Chao-Yuan Wu and Li Fei-Fei and Ben Mildenhall and Georgia Gkioxari and Justin Johnson and Gowthami Somepalli},
+  year={2026},
+  eprint={2610.03636},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/2610.03636},
+}</code></pre>
+    </div>
+  </section>
+
+
+  <div class="footer">
+    <p style="font-size: 12px; color: gray;">
+        This website builds upon the template of <a href="https://mcc3d.github.io/">MCC</a>.
+    </p>
+  </div>
+
+  <script>
+    // Load the selected scene into every video of a grid and keep them in sync:
+    // all restart together whenever the first one ends. The failure-mode select
+    // narrows the scene select to the scenes tagged with that mode.
+    function setupComparison(modeId, selectId, gridId, dir) {
+      const mode = document.getElementById(modeId);
+      const select = document.getElementById(selectId);
+      const scenes = Array.from(select.options);
+      const videos = Array.from(document.querySelectorAll('#' + gridId + ' video'));
+      function load() {
+        const opt = select.options[select.selectedIndex];
+        const rate = 1 / parseFloat(opt.dataset.slowdown || '1');
+        const inputImg = document.querySelector('img.input-image[data-dir="' + dir + '"]');
+        if (inputImg) inputImg.src = 'static/videos/' + dir + '/' + opt.value + '/input.jpg';
+        videos.forEach(v => {
+          v.src = 'static/videos/' + dir + '/' + opt.value + '/' + v.dataset.method + '.mp4?v=2';
+          v.defaultPlaybackRate = rate;
+          v.playbackRate = rate;
+        });
+        Promise.all(videos.map(v => new Promise(r => v.addEventListener('canplay', r, {once: true}))))
+          .then(() => videos.forEach(v => v.play().catch(() => {})));
+      }
+      videos[0].addEventListener('ended', () => {
+        videos.forEach(v => { v.currentTime = 0; v.play().catch(() => {}); });
+      });
+      function filterScenes() {
+        select.replaceChildren(...scenes.filter(o => mode.value === 'all' || o.dataset.mode === mode.value));
+        select.selectedIndex = 0;
+      }
+      mode.addEventListener('change', () => { filterScenes(); load(); });
+      select.addEventListener('change', load);
+      filterScenes();
+      // Only fetch this section's videos once it is about to scroll into view.
+      const grid = document.getElementById(gridId);
+      const io = new IntersectionObserver(entries => {
+        if (entries.some(e => e.isIntersecting)) { io.disconnect(); load(); }
+      }, {rootMargin: '300px 0px'});
+      io.observe(grid);
+    }
+    // Keep each title line on one row: shrink the font until the widest line fits,
+    // whatever font the browser ended up using.
+    function fitTitle() {
+      const h = document.querySelector('.publication-title');
+      h.style.fontSize = '';
+      if (window.innerWidth < 769) return;
+      const lines = Array.from(h.querySelectorAll('.title-line'));
+      const avail = h.closest('.container').clientWidth;
+      const widest = Math.max(...lines.map(l => l.getBoundingClientRect().width));
+      if (widest > avail) {
+        h.style.setProperty('font-size', (parseFloat(getComputedStyle(h).fontSize) * avail / widest * 0.98) + 'px', 'important');
+      }
+    }
+    window.addEventListener('resize', fitTitle);
+    document.fonts.ready.then(fitTitle);
+
+    // Videos in a comparison show their own controls; when the viewer seeks, pauses or plays one, the rest
+    // follow. Only viewer actions are mirrored: the browser also pauses muted videos on its own (e.g. when
+    // they scroll out of view), and those pauses must not stop the whole group.
+    function syncGroup(videos) {
+      let busy = false, user = false, release = null;
+      const each = (src, f) => {
+        if (busy || !user) return;
+        busy = true; videos.forEach(o => { if (o !== src) f(o); }); busy = false;
+      };
+      const start = () => { user = true; clearTimeout(release); };
+      const stop = () => { clearTimeout(release); release = setTimeout(() => { user = false; }, 500); };
+      videos.forEach(v => {
+        v.addEventListener('pointerdown', start);
+        v.addEventListener('keydown', () => { start(); stop(); });
+        v.addEventListener('seeking', () => each(v, o => { if (Math.abs(o.currentTime - v.currentTime) > 0.05) o.currentTime = v.currentTime; }));
+        v.addEventListener('pause', () => { if (!v.ended) each(v, o => { if (!o.paused) o.pause(); }); });
+        v.addEventListener('play', () => each(v, o => { if (o.paused) o.play().catch(() => {}); }));
+      });
+      window.addEventListener('pointerup', stop);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fitTitle();
+      setupComparison('baselines-mode', 'baselines-select', 'baselines-grid', 'baselines');
+      setupComparison('ablation-mode', 'ablation-select', 'ablation-grid', 'ablation');
+      syncGroup(Array.from(document.querySelectorAll('#baselines-grid video')));
+      syncGroup(Array.from(document.querySelectorAll('#ablation-grid video')));
+    });
+  </script>
+
+</body>
+
+</html>
