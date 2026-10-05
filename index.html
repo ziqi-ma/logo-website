@@ -61,7 +61,7 @@
       font-size: 19px !important;
     }
     .controls-note {
-      font-size: 20px;
+      font-size: 19px;
       color: #555;
       text-align: center;
       margin-top: 8px;
@@ -225,7 +225,7 @@
         </p>
         <div style="height: 30px;"></div>
         <video id="teaser" autoplay muted loop playsinline controls disablepictureinpicture width="100%">
-          <source src="static/videos/teaser.mp4?v=7" type="video/mp4">
+          <source src="static/videos/teaser.mp4?v=8" type="video/mp4">
         </video>
           <p class="controls-note">WASD denotes camera translation, and arrows denote rotation.</p>
       </div>
@@ -487,7 +487,7 @@
         const inputImg = document.querySelector('img.input-image[data-dir="' + dir + '"]');
         if (inputImg) inputImg.src = 'static/videos/' + dir + '/' + opt.value + '/input.jpg';
         videos.forEach(v => {
-          v.src = 'static/videos/' + dir + '/' + opt.value + '/' + v.dataset.method + '.mp4?v=2';
+          v.src = 'static/videos/' + dir + '/' + opt.value + '/' + v.dataset.method + '.mp4?v=3';
           v.defaultPlaybackRate = rate;
           v.playbackRate = rate;
         });
